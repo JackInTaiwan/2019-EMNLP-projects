@@ -152,7 +152,7 @@ def train(args):
             if global_step % args['log_step'] == 0:
                 duration = time.time() - start_time
                 print(format_str.format(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), global_step,\
-                        max_steps, loss, duration, current_lr))
+                        max_steps, loss, duration, current_lr), flush=True)
 
             if global_step % args['eval_interval'] == 0:
                 # eval on dev
@@ -167,14 +167,14 @@ def train(args):
                 _, _, dev_score = scorer.score(system_pred_file, gold_file)
 
                 train_loss = train_loss / args['eval_interval'] # avg loss per batch
-                print("step {}: train_loss = {:.6f}, dev_score = {:.4f}".format(global_step, train_loss, dev_score))
+                print("step {}: train_loss = {:.6f}, dev_score = {:.4f}".format(global_step, train_loss, dev_score), flush=True)
                 train_loss = 0
 
                 # save best model
                 if len(dev_score_history) == 0 or dev_score > max(dev_score_history):
                     last_best_step = global_step
                     trainer.save(model_file)
-                    print("new best model saved.")
+                    print("new best model saved.", flush=True)
                     best_dev_preds = dev_preds
 
                 dev_score_history += [dev_score]

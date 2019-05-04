@@ -19,8 +19,6 @@ class Parser(nn.Module):
         self.share_hid = share_hid
         self.unsaved_modules = []
         print('---- Parser model args', self.args)
-        # self.args['word_emb_dim'] = 150
-        self.args['tag_emb_dim'] = 100
 
         def add_unsaved_module(name, module):
             self.unsaved_modules += [name]
