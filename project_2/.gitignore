@@ -1,6 +1,7 @@
 ### File Types
 *.zip
 *.gz
+*.xz
 *.pt
 *.conllu
 *.results
@@ -8,5 +9,6 @@
 ### Dirs
 .vscode/
 .venv/
+__pycache__/
 cross_domain_dependency_parsing/
 cross_domain_dependency_parsing_v0/

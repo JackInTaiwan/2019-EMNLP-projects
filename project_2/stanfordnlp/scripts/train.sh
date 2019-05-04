@@ -1,0 +1,1 @@
+bash scripts/run_depparse.sh Chinese gold --batch_size 1000
