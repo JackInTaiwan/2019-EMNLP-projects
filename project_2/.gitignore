@@ -1,0 +1,12 @@
+### File Types
+*.zip
+*.gz
+*.pt
+*.conllu
+*.results
+
+### Dirs
+.vscode/
+.venv/
+cross_domain_dependency_parsing/
+cross_domain_dependency_parsing_v0/
