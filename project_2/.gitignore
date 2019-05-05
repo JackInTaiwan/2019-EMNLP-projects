@@ -3,6 +3,7 @@
 *.gz
 *.xz
 *.pt
+*.txt
 *.conllu
 *.results
 

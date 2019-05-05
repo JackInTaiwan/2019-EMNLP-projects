@@ -2,43 +2,13 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.nn.utils.rnn import pad_sequence, pad_packed_sequence, pack_padded_sequence, pack_sequence, PackedSequence
+from torch.nn.utils.rnn import pad_packed_sequence, pack_padded_sequence, pack_sequence, PackedSequence
 
 from stanfordnlp.models.common.biaffine import DeepBiaffineScorer
 from stanfordnlp.models.common.hlstm import HighwayLSTM
 from stanfordnlp.models.common.dropout import WordDropout
 from stanfordnlp.models.common.vocab import CompositeVocab
 from stanfordnlp.models.common.char_model import CharacterModel
-
-
-class LSTMModel(nn.Module):
-    def __init__(self, **kwargs):
-        super(LSTMModel, self).__init__()
-
-        # self.fc_1 = nn.Linear(kwargs["hidden_size"], kwargs["fc_1"])
-        # self.fc_2 = nn.Linear(kwargs["fc_1"], kwargs["output_size"])
-        self.lstm = nn.LSTM(
-            input_size=kwargs["input_size"],
-            hidden_size=kwargs["hidden_size"],
-            num_layers=kwargs["num_layers"],
-            dropout=kwargs["dropout"],
-            batch_first=True,
-        )
-        self.sigmoid = torch.nn.Sigmoid()
-        self.drop = torch.nn.Dropout(p=kwargs["dropout"])
-
-
-    def forward(self, x) :
-        # x: (batch, use_days, 4)
-        o, (h_n, c_n) = self.lstm(x)     #(batch, seq, hidden_size), (layer, batch, hidden_size), (layer, batch, hidden_size)
-        # o = o[:, -1]
-        # m = torch.mean(x, dim=1)
-        # o = self.fc_1(o)
-        # o = self.drop(self.sigmoid(o))
-        # o = self.fc_2(o)
-        # o = o + m
-        return o
-
 
 class Parser(nn.Module):
     def __init__(self, args, vocab, emb_matrix=None, share_hid=False):
@@ -90,11 +60,6 @@ class Parser(nn.Module):
             add_unsaved_module('pretrained_emb', nn.Embedding.from_pretrained(torch.from_numpy(emb_matrix), freeze=True))
             self.trans_pretrained = nn.Linear(emb_matrix.shape[1], self.args['transformed_dim'], bias=False)
             input_size += self.args['transformed_dim']
-
-        #-
-        # self.sentencelstm = HighwayLSTM(self.args['transformed_dim'], self.args['hidden_dim'], self.args['num_layers'], batch_first=True, bidirectional=True, dropout=self.args['dropout'], rec_dropout=self.args['rec_dropout'], highway_func=torch.tanh)
-        self.sentencelstm = LSTMModel(input_size=125, hidden_size=100, num_layers=1, fc_1=100, dropout=0.5)
-        input_size += 100
 
         # recurrent layers
         self.parserlstm = HighwayLSTM(input_size, self.args['hidden_dim'], self.args['num_layers'], batch_first=True, bidirectional=True, dropout=self.args['dropout'], rec_dropout=self.args['rec_dropout'], highway_func=torch.tanh)
@@ -158,28 +123,8 @@ class Parser(nn.Module):
             char_reps = PackedSequence(self.trans_char(self.drop(char_reps.data)), char_reps.batch_sizes)
             inputs += [char_reps]
 
-        #-
-        if True:
-            word_emb_input = self.pretrained_emb(pretrained)
-            word_emb_input = self.trans_pretrained(word_emb_input)
-            word_emb_input = pack(word_emb_input)
-            # word_emb_input = self.word_emb(word)
-            # word_emb_input = pack(word_emb_input)
-        
-            lstm_sen = self.sentencelstm(word_emb_input)
-            lstm_sen, lengths = pad_packed_sequence(lstm_sen, batch_first=True)
-            lstm_sen = lstm_sen[:, -2:-1]
-            # print('---- lstm_sen', lstm_sen.shape)
-            lstm_sen_input = []
-            for i, v in enumerate(lstm_sen):
-                new_v = v.repeat(sentlens[i], 1)
-                lstm_sen_input.append(new_v)
-            lstm_sen_input = pad_sequence(lstm_sen_input, batch_first=True)
-            lstm_sen_input = pack(lstm_sen_input)
-            
-            inputs += [lstm_sen_input]
-
         lstm_inputs = torch.cat([x.data for x in inputs], 1)
+
         lstm_inputs = self.worddrop(lstm_inputs, self.drop_replacement)
         lstm_inputs = self.drop(lstm_inputs)
 
