@@ -13,3 +13,6 @@
 __pycache__/
 cross_domain_dependency_parsing/
 cross_domain_dependency_parsing_v0/
+
+### Files
+notes.py
