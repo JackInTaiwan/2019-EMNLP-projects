@@ -10,7 +10,7 @@ __pycache__/
 *.lem
 *.toklabels
 
-data/
+# data/
 # saved_models/
 logs/
 *_test_treebanks
