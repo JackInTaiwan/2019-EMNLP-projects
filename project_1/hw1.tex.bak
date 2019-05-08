@@ -1,0 +1,97 @@
+\documentclass{article}
+%\usepackage[utf8]{inputenc}
+\usepackage{mathtools}
+\usepackage{amsmath}
+
+\usepackage[a4paper, total={5.5in, 10in}]{geometry}
+
+\title{Low Resource NLP Assignment}
+\author{Yuan-Chia Cheng}
+\date{April 2019}
+
+
+\begin{document}
+\maketitle
+
+
+\section*{1 The Design of a WSD System}
+In the task, we design a pipeline, that is also a system, to perform \textbf{word sense disambiguation} task.
+\subsection*{1.1 Deep into the Provided Annotated Training Data}
+The very first step is to get a clear whole picture of the constent and structure of the provided annotated training data. Afterwards, here come 3 strategies to take to manipulate the data depending on the scale and distribution of data:
+\begin{enumerate}
+\item Pure online data search
+\item Pure parsed data search
+\item Hybrid search
+\end{enumerate}
+If the size scale is practically numerous and the distribution is rather balanced, then we may as well take the first strategy \textbf{Pure online data search} where we go on our counting task online each time required by the task shown later. \\
+If the size scale is practically affordable, then it's worth a try to take second strategy \textbf{Pure parsed data search} where we parse the online data into our desire format and save them to our database in turn.
+Otherwise, we're supposed to take the third strategy \textbf{Hybrid search}, which literally combines the first and the second ones. In the case of frequent word, we take the second strategy, and in the other, we take the first one.
+
+\subsection*{1.2 Model: Mainly Apply Naive Bayse Model}
+We basically adapt Naive Bayse Model to determine the word sense in the context.\\
+Here shows the core fomula of Naive Bayse Model:
+\[
+s^* = \mathop{\arg\max}_{s_k} \prod_{v_x \in C^{'}} P(v_x | s_k)P(s_k) \tag{1}
+\]
+where $s_k$ = the candidates of the sense, $C^{'}$ is the context of one testing sample. \\
+In order to evaluate the probability, we perform counting task:
+\[
+P(v_x | s_k) = \frac{Count(v_x, s_k)}{Count(s_k)} \tag{2}
+\]
+\[
+P(s_k) = \frac{Count(s_k)}{Count(w)} \tag{3}
+\]
+Last but not least, some trick is applied to smooth the probabilities so as to avoid suffering from the zero probability problem especially. Here we adapt Add-one smoothing method.\\
+So the final formula simply reduces to
+\[
+s* = \mathop{\arg\max}_{s_k} \prod_{v_x \in C^{'}} (Count(v_x, s_k) + 1) \tag{4}
+\]
+As shown, the only actual procedure we need to go through turns out to be pure counting task.
+
+\subsection*{1.3 Prediction}
+Let the testing sentence be $S=w_1, w_2, w_3,...,w_k, , w_n$ with the actual word sense of $w_k$ to be predicted.\\[12px]
+We search all possible senses $s_1, s_2,..., s_n$ of $w_k$ on WordNet-style English Dictionary, and then we perform our counting task based on the provided annotated training data. In the end, we're able to have our result, that is the most likely word sense of $w_k$, by applying $(4)$.\\[12px]
+Note that, in real world, we may be confronted by the computation insufficiency caused by the numerous annotated training data. In this case, we can set an upper limit of the consumed time of seaching data which contain $w_k$ to collect a subset data, and we only make use of it to perform counting task.
+
+
+
+\section*{2 The Design of a POS Tagger}
+In the task, we design a POS tagger to predict the parts of speech of words in one sentence.
+
+\subsection*{2.1 Deep into the Provided Annotated Training Data}
+What we do in this step is the same as the one subscribed in \textbf{1.1 Deep into the Provided Annotated Training Data}. Likewise, we still have the same three strategies to tackle our data here.
+
+\subsection*{2.2 Model: Mainly Apply Hidden Markov Model}
+Typical Hidden Markov Model with bi-gram LM is applied to help find the best sequence of POS.\\
+Core formula is shown
+
+\begin{align*}
+[y*_i] &= \mathop{\arg\max}_{y_i} p(y_1) [p(y_2 | y_1) p(y_3 | y_2) ... p(y_n | y_{n-1})] \prod_{i}^n p(x_i, y_i) \\
+&= \mathop{\arg\max}_{y_i} LookupTheTable(y_i) \prod_i^n Count(x_i, y_i) \tag{5}
+\end{align*}
+For the part of bi-gram LM, considering the number of possible combinations is quite limited, we parse every two parts of speech of any adjacent words in all provided annotated training data and store the all possible $p(y_i | y_j)$ in a database(or any file). In the following steps, we can have a quicker access to the $p(y_i | y_j)$ when needed. The term $LookupTheTable(.)$ in $(5)$ is exactly what we undergo here.\\[12px]
+As to the probability $p(x_i, y_i)$, we apply \textit{Good Turing Discounting} Method to avoid the zero probability problem.
+
+\subsection*{2.3 Prediction}
+Base on the Hidden Markov Model, the prediction is simply to choose the one with highest value of all possible POS sequences.\\[12px]
+What's more, instead of brute force method where we calculate every single POS sequence, \textit{the Viterbi Algorithm} will be implemented to obtain better time complexity. \\
+Here shows the core formula
+\[
+\pi(i, u, v) = \max_{w \in S_{i-2}} \pi(i-1, w, u)p(v|w, u)p(x_i | v) \tag{5}
+\]
+Our objective function goes to
+\[
+\max_{u\in S_{n-1}, v\in S_n} \pi(n, u, v) p(STOP|u, v)
+\]
+
+
+
+\section*{3 Analysis of the Two Tasks}
+The WSD system is easier to implement than the POS tagger.\\
+We can consider the main effort of WSD is covered by the one of POST tagger. The term $\prod_{v_x \in C^{'}} (Count(v_x, s_k) + 1)$ in $(4)$ requires the same effort as the term $\prod_i^n Count(x_i, y_i)$ in $(5)$, while there is the other term $LookupTheTable(y_i)$ in $(4)$ left to work on. \\[12px]
+Moreover, to cope with the part $LookupTheTable(y_i)$ in POS tagger, we need storage to store the counting result which loads the implementation with extra burden.
+
+\bibliographystyle{plain}
+\bibliography{references}
+\nocite{*}
+\end{document}

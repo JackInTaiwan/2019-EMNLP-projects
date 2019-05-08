@@ -1,0 +1,18 @@
+\begin{thebibliography}{1}
+
+\bibitem{dozat-etal-2017-stanfords}
+Timothy Dozat, Peng Qi, and Christopher~D. Manning.
+\newblock {S}tanford{'}s graph-based neural dependency parser at the {C}o{NLL}
+  2017 shared task.
+\newblock In {\em Proceedings of the {C}o{NLL} 2017 Shared Task: Multilingual
+  Parsing from Raw Text to Universal Dependencies}, pages 20--30, Vancouver,
+  Canada, August 2017. Association for Computational Linguistics.
+
+\bibitem{qi2018universal}
+Peng Qi, Timothy Dozat, Yuhao Zhang, and Christopher~D. Manning.
+\newblock Universal dependency parsing from scratch.
+\newblock In {\em Proceedings of the {CoNLL} 2018 Shared Task: Multilingual
+  Parsing from Raw Text to Universal Dependencies}, pages 160--170, Brussels,
+  Belgium, October 2018. Association for Computational Linguistics.
+
+\end{thebibliography}

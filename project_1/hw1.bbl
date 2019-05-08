@@ -1,0 +1,27 @@
+\begin{thebibliography}{1}
+
+\bibitem{CHURCH199119}
+Kenneth~W. Church and William~A. Gale.
+\newblock A comparison of the enhanced good-turing and deleted estimation
+  methods for estimating probabilities of english bigrams.
+\newblock {\em Computer Speech \& Language}, 5(1):19 -- 54, 1991.
+
+\bibitem{10.1093/biomet/40.3-4.237}
+I.~J. GOOD.
+\newblock {THE POPULATION FREQUENCIES OF SPECIES AND THE ESTIMATION OF
+  POPULATION PARAMETERS}.
+\newblock {\em Biometrika}, 40(3-4):237--264, 12 1953.
+
+\bibitem{Navigli:2009:WSD:1459352.1459355}
+Roberto Navigli.
+\newblock Word sense disambiguation: A survey.
+\newblock {\em ACM Comput. Surv.}, 41(2):10:1--10:69, February 2009.
+
+\bibitem{1054010}
+A.~{Viterbi}.
+\newblock Error bounds for convolutional codes and an asymptotically optimum
+  decoding algorithm.
+\newblock {\em IEEE Transactions on Information Theory}, 13(2):260--269, April
+  1967.
+
+\end{thebibliography}

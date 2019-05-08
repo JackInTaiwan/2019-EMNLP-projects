@@ -1,0 +1,49 @@
+\documentclass{article}
+\usepackage{mathtools}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage[a4paper, total={5.5in, 10in}]{geometry}
+
+\title{Dependency Parser on StanfordNLP model}
+\author{Yuan-Chia Cheng}
+\date{May 2019}
+
+
+\begin{document}
+\maketitle
+
+
+\section*{1 The Dependency Parser Model of StanfordNLP}
+We apply dependency parser model of stanfordNLP to go through our task. Furthermore, we append extra neural network feature to enhance the performance which will be expanded on later.
+
+\subsection*{1.1 Standard Model Structure}
+StanfordNLP model (2018) is contributed to extract information from word embedding, character embedding, POS embeddingm, lemma embedding and summed UFeats embedding, and then pass these extracted vectors through a highway LSTM to have a set of scores on each head candidates per word.
+What's more, following the output of highway LSTM, they also take the distance of head candidates and linear order into consideration, that is the length of arcs and the direction of the arcs, by mainly applying Baye's rule and Deep-Biaffine Model to place some constraints on the distances and linear order.
+
+\subsection*{1.2 Modification on Standard Model - Sentence Domain}
+To fuse cross domain information into the model, we apply a simple BiLSTM to the input sequence of words, considering the output vector of the BiLSTM as the domain information of the sentence, and then put it into the original highway LSTM along with the other original vectors such as word embedding. By so, we hope the model can be more sensentive to which domain the input sentence comes from.
+
+
+\subsection*{1.3 Experiments and Results}
+\begin{tabular}{c l}
+\toprule
+UAS(F1)& Description\\
+\midrule
+$\sim$ 0.77& Standard Stanford model w/o Char. Emb. w/ S.D. \\
+$\sim$ 0.76& Standard Stanford model w/o Char. Emb.\\
+$\sim$ 0.74& Standard Stanford model w/ S.D\\
+$\sim$ 0.73& Standard Stanford model\\
+$\sim$ 0.70& Standard Stanford model w/o distance constraint\\
+\bottomrule
+\end{tabular}\\
+* S.D denotes our Sentence Domain feature\\
+* Char. Emb. denotes Character Embedding
+
+
+\subsection*{1.4 Other sources we adpat}
+We adapt pretrained word embedding dataset to train our model. FastText supported by Facebook is adpated this time which is a 300-dim word embedding dataset.
+
+\bibliographystyle{plain}
+\bibliography{references}
+\nocite{*}
+\end{document}
