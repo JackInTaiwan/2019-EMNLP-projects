@@ -18,9 +18,9 @@ short=`bash scripts/treebank_to_shorthand.sh ud $treebank`
 lang=`echo $short | sed -e 's#_.*##g'`
 
 train_file=${DEPPARSE_DATA_DIR}/${short}.train.in.conllu
-eval_file=${DEPPARSE_DATA_DIR}/${short}.dev.in.conllu
-output_file=${DEPPARSE_DATA_DIR}/${short}.dev.pred.conllu
-gold_file=${DEPPARSE_DATA_DIR}/${short}.dev.gold.conllu
+eval_file=${DEPPARSE_DATA_DIR}/${short}.test.in.conllu
+output_file=${DEPPARSE_DATA_DIR}/${short}.test.pred.conllu
+gold_file=${DEPPARSE_DATA_DIR}/${short}.test.gold.conllu
 
 if [ ! -e $train_file ]; then
     bash scripts/prep_depparse_data.sh $treebank $tag_type
