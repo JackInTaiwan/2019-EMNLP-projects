@@ -60,7 +60,7 @@ def calculate_valid_acc(x_valid, y_valid, model, word_table):
 
 def train():
     # nltk.download('punkt', download_dir='./')
-    word_table = word_voc('./cc.en.300.vec', 800000)
+    word_table = word_voc('./cc.en.300.vec', 500000)
     label_list, cate_list = produce_labels('./data.train')
     
     model = CategoryClassifier(
@@ -88,8 +88,8 @@ def train():
     )
     loss_func = nn.CrossEntropyLoss()
     optim = tor.optim.SGD([
-                {'params': model.lstm.parameters(), 'lr': 1},
-                {'params': model.fc.parameters(), 'lr': 1e-4}
+                {'params': model.lstm.parameters(), 'lr': 10},
+                {'params': model.fc.parameters(), 'lr': 1e-5}
             ])
 
     for epoch_ in range(epoch):

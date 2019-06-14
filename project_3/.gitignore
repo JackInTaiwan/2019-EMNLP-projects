@@ -12,7 +12,6 @@ test.py
 
 
 ### Types
-*.train
 *.dev
 *.test
 *.zip
