@@ -1,0 +1,20 @@
+### Dirs
+.venv/
+.vscode/
+__pycache__/
+33/
+tokenizers/
+
+
+### Files
+test.py
+
+
+
+### Types
+*.train
+*.dev
+*.test
+*.zip
+*.gz
+*.vec
