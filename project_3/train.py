@@ -124,7 +124,7 @@ if __name__ == '__main__':
     from argparse import ArgumentParser
     
     parser = ArgumentParser()
-    parser.add_argument('--gpu', type=bool, action='store_true', default=False, help='use gpu')
+    parser.add_argument('--gpu', action='store_true', default=False, help='use gpu')
     args = parser.parse_args()
 
     train(gpu=args.gpu)
