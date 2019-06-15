@@ -10,6 +10,11 @@ from torch.utils.data import DataLoader
 
 
 
+np.random.seed(123)
+UNKNOWN = np.random.randn(300)
+
+
+
 def batch_to_packed_sequence(word_table, sentences):
     vec_dim = 300
     s_vec_list, s_len_list = [], []
@@ -20,7 +25,7 @@ def batch_to_packed_sequence(word_table, sentences):
             try:
                 v_vec = word_table[word]
             except:
-                v_vec = np.random.randn(vec_dim)
+                v_vec = UNKNOWN
             s_vec.append(v_vec)
         s_len_list.append(len(s_vec))
         s_vec_list.append(tor.tensor(s_vec, dtype=tor.float))
@@ -67,7 +72,7 @@ def train(gpu, lr_lstm, lr_fc, word_table_limit, hidden_size, fc_size):
     model = CategoryClassifier(
         input_size=300,
         hidden_size=hidden_size,
-        num_layers=2,
+        num_layers=1,
         fc_size=fc_size,
         cate_size=len(cate_list)
     )
@@ -100,7 +105,8 @@ def train(gpu, lr_lstm, lr_fc, word_table_limit, hidden_size, fc_size):
 
     for epoch_ in range(epoch):
         for step, ((x, idx_entity_s, idx_entity_e), y) in enumerate(data_loader):
-            x_ts, y_ts = batch_to_packed_sequence(word_table, x), y
+            x_ts = batch_to_packed_sequence(word_table, x) if not gpu else batch_to_packed_sequence(word_table, x).cuda()
+            y_ts = y if not gpu else y.cuda()
             optim.zero_grad()
             pred = model(x_ts)
 

@@ -17,16 +17,17 @@ class CategoryClassifier(nn.Module):
         )
         
         self.fc = nn.Sequential(
-            # nn.Tanh(),
-            nn.Linear(hidden_size, fc_size),
+            # # nn.Tanh(),
+            # nn.Sigmoid(),
+            nn.Linear(hidden_size, fc_size, bias=False),
             nn.Dropout(p=dropout),
+            nn.ReLU(),
+            # nn.Sigmoid(),
+            # nn.Linear(fc_size, fc_size, bias=False),
+            # nn.Dropout(p=dropout),
             # nn.ReLU(),
-            nn.Sigmoid(),
-            nn.Linear(fc_size, fc_size),
-            nn.Dropout(p=dropout),
-            # nn.ReLU(),
-            nn.Sigmoid(),
-            nn.Linear(fc_size, cate_size),
+            # nn.Sigmoid(),
+            nn.Linear(fc_size, cate_size, bias=False),
         )
 
 
@@ -36,7 +37,8 @@ class CategoryClassifier(nn.Module):
         x, x_len = pad_packed_sequence(x, batch_first=True)
         gather_idx = (x_len - 1).unsqueeze(1).unsqueeze(2).repeat(1, 1, x.size(2))
         x = tor.gather(x, dim=1, index=gather_idx).squeeze(1)
-        # print(x)
+        # if not self.training: print(x)
         o = self.fc(x)
+        # if not self.training: print(o)
 
         return o
