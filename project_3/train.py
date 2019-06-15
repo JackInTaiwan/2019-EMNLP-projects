@@ -49,8 +49,9 @@ def calculate_valid_acc(x_valid, y_valid, model, word_table):
         x_ts, y_ts = batch_to_packed_sequence(word_table, x), y
         pred = model(x_ts)
         acc = tor.mean((tor.max(pred, dim=1)[1] == y_ts).type(tor.float))
+        print((tor.max(pred, dim=1)[1]))
         acc_list.append(acc.detach().numpy())
-    print(pred[0])
+    
     acc_output = np.mean(np.array(acc_list))
     model.train()
     
@@ -58,16 +59,16 @@ def calculate_valid_acc(x_valid, y_valid, model, word_table):
 
 
 
-def train():
+def train(gpu):
     # nltk.download('punkt', download_dir='./')
-    word_table = word_voc('./cc.en.300.vec', 500000)
+    word_table = word_voc('./cc.en.300.vec', 400000)
     label_list, cate_list = produce_labels('./data.train')
     
     model = CategoryClassifier(
         input_size=300,
         hidden_size=2 ** 8,
         num_layers=2,
-        fc_size=2 ** 8,
+        fc_size=2 ** 9,
         cate_size=len(cate_list)
     )
 
@@ -88,9 +89,15 @@ def train():
     )
     loss_func = nn.CrossEntropyLoss()
     optim = tor.optim.SGD([
-                {'params': model.lstm.parameters(), 'lr': 10},
+                {'params': model.lstm.parameters(), 'lr': 1e-3},
                 {'params': model.fc.parameters(), 'lr': 1e-5}
             ])
+    
+    if gpu:
+        print('|Use GPU')
+        loss_func = loss_func.cuda()
+        optim = optim.cuda()
+        model = model.cuda()
 
     for epoch_ in range(epoch):
         for step, ((x, idx_entity_s, idx_entity_e), y) in enumerate(data_loader):
@@ -103,15 +110,21 @@ def train():
             loss.backward()
             optim.step()
             if step % 50 == 0:
-                print('Loss', loss.detach().numpy())
+                print('Loss', loss.detach().numpy(), flush=True)
             
-            if step % 300 == 0:
-                print(list(model.lstm.parameters())[0])
+            if step % 1000 == 0:
+                optim.zero_grad()
                 valid_sample_size = 2000
                 acc = calculate_valid_acc(x_train[:valid_sample_size], y_train[:valid_sample_size], model, word_table)
-                print('Acc:', acc)
+                print('Acc:', acc, flush=True)
 
 
 
 if __name__ == '__main__':
-    train()
+    from argparse import ArgumentParser
+    
+    parser = ArgumentParser()
+    parser.add_argument('--gpu', type=bool, action='store_true', default=False, help='use gpu')
+    args = parser.parse_args()
+
+    train(gpu=args.gpu)

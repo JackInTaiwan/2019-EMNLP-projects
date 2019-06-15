@@ -17,13 +17,15 @@ class CategoryClassifier(nn.Module):
         )
         
         self.fc = nn.Sequential(
-            nn.Tanh(),
+            # nn.Tanh(),
             nn.Linear(hidden_size, fc_size),
             nn.Dropout(p=dropout),
-            nn.ReLU(),
+            # nn.ReLU(),
+            nn.Sigmoid(),
             nn.Linear(fc_size, fc_size),
             nn.Dropout(p=dropout),
-            nn.ReLU(),
+            # nn.ReLU(),
+            nn.Sigmoid(),
             nn.Linear(fc_size, cate_size),
         )
 
