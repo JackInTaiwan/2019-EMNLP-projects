@@ -63,25 +63,47 @@ def calculate_valid_acc(x_valid, y_valid, model, word_table):
     return acc_output
 
 
+def calculate_weight():
+    data = np.load('./data.transform.train.npy', allow_pickle=True)
+    dist_table = {}
+
+    for item in data:
+        cate = item[4]
+        dist_table.setdefault(cate, 0)
+        dist_table[cate] += 1
+    
+    dist = []
+    for i in range(1541):
+        if i in dist_table.keys():
+            dist.append(dist_table[i])
+        else:
+            dist.append(0)
+
+    dist = tor.tensor(dist).type(tor.float)
+    weight = tor.ones(dist.size(0)) / dist
+    label_size = len(dist)
+
+    return weight, label_size
+
 
 def train(gpu, lr_lstm, lr_fc, word_table_limit, hidden_size, fc_size, batch_size):
     # nltk.download('punkt', download_dir='./')
     word_table = word_voc('./cc.en.300.vec', word_table_limit)
     label_list, cate_list = produce_labels('./data.train')
-    
+    data = np.load('./data.transform.train.npy', allow_pickle=True)
+    x_train, y_train = data[:, 0: 3], data[:, 4]
+    weight, label_size = calculate_weight()
+
     model = CategoryClassifier(
         input_size=300,
         hidden_size=hidden_size,
         num_layers=1,
         fc_size=fc_size,
-        cate_size=len(label_list)
+        cate_size=label_size
     )
-
-    data = np.load('./data.transform.train.npy', allow_pickle=True)
     
-    x_train, y_train = data[:, 0: 3], data[:, 4]
+    
     epoch = 100
-
     dataset = SequenceDataset(x_train, y_train)
     data_loader = DataLoader(
         dataset=dataset,
@@ -90,7 +112,7 @@ def train(gpu, lr_lstm, lr_fc, word_table_limit, hidden_size, fc_size, batch_siz
         drop_last=True,
         num_workers=2,
     )
-    loss_func = nn.CrossEntropyLoss()
+    loss_func = nn.CrossEntropyLoss(weight=weight)
     optim = tor.optim.SGD([
                 {'params': model.lstm.parameters(), 'lr': lr_lstm},
                 {'params': model.fc.parameters(), 'lr': lr_fc}
@@ -113,7 +135,6 @@ def train(gpu, lr_lstm, lr_fc, word_table_limit, hidden_size, fc_size, batch_siz
             y_ts = y if not gpu else y.cuda()
             optim.zero_grad()
             pred = model(x_ts)
-
             loss = loss_func(pred, y_ts)
             acc = tor.mean((tor.max(pred, dim=1)[1] == y_ts).type(tor.float))
             loss.backward()
@@ -126,6 +147,7 @@ def train(gpu, lr_lstm, lr_fc, word_table_limit, hidden_size, fc_size, batch_siz
                 valid_sample_size = 2000
                 acc = calculate_valid_acc(x_train[:valid_sample_size], y_train[:valid_sample_size], model, word_table)
                 print('Acc:', acc, flush=True)
+                
         lr_scheduler.step()
 
 
