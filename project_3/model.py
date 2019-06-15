@@ -14,14 +14,15 @@ class CategoryClassifier(nn.Module):
             num_layers=num_layers,
             dropout=dropout,
             batch_first=True,
+            bias=False,
         )
         
         self.fc = nn.Sequential(
             # # nn.Tanh(),
             # nn.Sigmoid(),
             nn.Linear(hidden_size, fc_size, bias=False),
-            nn.Dropout(p=dropout),
             nn.ReLU(),
+            nn.Dropout(p=dropout),
             # nn.Sigmoid(),
             # nn.Linear(fc_size, fc_size, bias=False),
             # nn.Dropout(p=dropout),

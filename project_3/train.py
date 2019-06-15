@@ -64,7 +64,7 @@ def calculate_valid_acc(x_valid, y_valid, model, word_table):
 
 
 
-def train(gpu, lr_lstm, lr_fc, word_table_limit, hidden_size, fc_size):
+def train(gpu, lr_lstm, lr_fc, word_table_limit, hidden_size, fc_size, batch_size):
     # nltk.download('punkt', download_dir='./')
     word_table = word_voc('./cc.en.300.vec', word_table_limit)
     label_list, cate_list = produce_labels('./data.train')
@@ -80,9 +80,7 @@ def train(gpu, lr_lstm, lr_fc, word_table_limit, hidden_size, fc_size):
     data = np.load('./data.transform.train.npy', allow_pickle=True)
     
     x_train, y_train = data[:, 0: 3], data[:, 3]
-    batch_size = 2 ** 4
     epoch = 100
-    lr = 0.01
 
     dataset = SequenceDataset(x_train, y_train)
     data_loader = DataLoader(
@@ -96,7 +94,12 @@ def train(gpu, lr_lstm, lr_fc, word_table_limit, hidden_size, fc_size):
     optim = tor.optim.SGD([
                 {'params': model.lstm.parameters(), 'lr': lr_lstm},
                 {'params': model.fc.parameters(), 'lr': lr_fc}
-            ], momentum=0.5)
+            ])
+    lr_scheduler = tor.optim.lr_scheduler.StepLR(
+        optim,
+        step_size=1,
+        gamma=0.1,
+    )
     
     if gpu:
         print('|Use GPU')
@@ -104,6 +107,7 @@ def train(gpu, lr_lstm, lr_fc, word_table_limit, hidden_size, fc_size):
         model = model.cuda()
 
     for epoch_ in range(epoch):
+        print('|Epoch:', epoch_)
         for step, ((x, idx_entity_s, idx_entity_e), y) in enumerate(data_loader):
             x_ts = batch_to_packed_sequence(word_table, x) if not gpu else batch_to_packed_sequence(word_table, x).cuda()
             y_ts = y if not gpu else y.cuda()
@@ -122,6 +126,7 @@ def train(gpu, lr_lstm, lr_fc, word_table_limit, hidden_size, fc_size):
                 valid_sample_size = 2000
                 acc = calculate_valid_acc(x_train[:valid_sample_size], y_train[:valid_sample_size], model, word_table)
                 print('Acc:', acc, flush=True)
+        lr_scheduler.step()
 
 
 
@@ -135,6 +140,7 @@ if __name__ == '__main__':
     parser.add_argument('--word-table', dest='word_table_limit', type=int, default=400000, help='size of required word table')
     parser.add_argument('--hidden-size', type=int, default=2 ** 9, help='hidden size of lstm model')
     parser.add_argument('--fc-size', type=int, default=2 ** 9, help='fc size of fc model')
+    parser.add_argument('--batch', dest='batch_size', type=int, default=2 ** 4, help='batch size')
     args = parser.parse_args()
 
     train(**vars(args))
