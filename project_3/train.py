@@ -97,8 +97,8 @@ def train(gpu, lr_lstm, lr_fc, word_table_limit, hidden_size, fc_size, batch_siz
             ])
     lr_scheduler = tor.optim.lr_scheduler.StepLR(
         optim,
-        step_size=1,
-        gamma=0.1,
+        step_size=2,
+        gamma=0.4,
     )
     
     if gpu:
