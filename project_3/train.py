@@ -74,12 +74,12 @@ def train(gpu, lr_lstm, lr_fc, word_table_limit, hidden_size, fc_size, batch_siz
         hidden_size=hidden_size,
         num_layers=1,
         fc_size=fc_size,
-        cate_size=len(cate_list)
+        cate_size=len(label_list)
     )
 
     data = np.load('./data.transform.train.npy', allow_pickle=True)
     
-    x_train, y_train = data[:, 0: 3], data[:, 3]
+    x_train, y_train = data[:, 0: 3], data[:, 4]
     epoch = 100
 
     dataset = SequenceDataset(x_train, y_train)
@@ -97,7 +97,7 @@ def train(gpu, lr_lstm, lr_fc, word_table_limit, hidden_size, fc_size, batch_siz
             ])
     lr_scheduler = tor.optim.lr_scheduler.StepLR(
         optim,
-        step_size=4,
+        step_size=10,
         gamma=0.5,
     )
     
