@@ -77,7 +77,7 @@ def calculate_weight():
         if i in dist_table.keys():
             dist.append(dist_table[i])
         else:
-            dist.append(0)
+            dist.append(float('inf'))
 
     dist = tor.tensor(dist).type(tor.float)
     weight = tor.ones(dist.size(0)) / dist
@@ -93,7 +93,7 @@ def train(gpu, lr_lstm, lr_fc, word_table_limit, hidden_size, fc_size, batch_siz
     data = np.load('./data.transform.train.npy', allow_pickle=True)
     x_train, y_train = data[:, 0: 3], data[:, 4]
     weight, label_size = calculate_weight()
-
+    print(weight)
     model = CategoryClassifier(
         input_size=300,
         hidden_size=hidden_size,
@@ -147,7 +147,7 @@ def train(gpu, lr_lstm, lr_fc, word_table_limit, hidden_size, fc_size, batch_siz
                 valid_sample_size = 2000
                 acc = calculate_valid_acc(x_train[:valid_sample_size], y_train[:valid_sample_size], model, word_table)
                 print('Acc:', acc, flush=True)
-                
+
         lr_scheduler.step()
 
 
