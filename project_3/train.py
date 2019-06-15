@@ -59,16 +59,16 @@ def calculate_valid_acc(x_valid, y_valid, model, word_table):
 
 
 
-def train(gpu):
+def train(gpu, lr_lstm, lr_fc, word_table_limit, hidden_size, fc_size):
     # nltk.download('punkt', download_dir='./')
-    word_table = word_voc('./cc.en.300.vec', 400000)
+    word_table = word_voc('./cc.en.300.vec', word_table_limit)
     label_list, cate_list = produce_labels('./data.train')
     
     model = CategoryClassifier(
         input_size=300,
-        hidden_size=2 ** 8,
+        hidden_size=hidden_size,
         num_layers=2,
-        fc_size=2 ** 9,
+        fc_size=fc_size,
         cate_size=len(cate_list)
     )
 
@@ -89,9 +89,9 @@ def train(gpu):
     )
     loss_func = nn.CrossEntropyLoss()
     optim = tor.optim.SGD([
-                {'params': model.lstm.parameters(), 'lr': 1e-3},
-                {'params': model.fc.parameters(), 'lr': 1e-5}
-            ])
+                {'params': model.lstm.parameters(), 'lr': lr_lstm},
+                {'params': model.fc.parameters(), 'lr': lr_fc}
+            ], momentum=0.5)
     
     if gpu:
         print('|Use GPU')
@@ -124,6 +124,11 @@ if __name__ == '__main__':
     
     parser = ArgumentParser()
     parser.add_argument('--gpu', action='store_true', default=False, help='use gpu')
+    parser.add_argument('--lr-1', dest='lr_lstm', type=float, default=1e-3, help='lr for lstm')
+    parser.add_argument('--lr-2', dest='lr_fc', type=float, default=1e-4, help='lr for fc')
+    parser.add_argument('--word-table', dest='word_table_limit', type=int, default=400000, help='size of required word table')
+    parser.add_argument('--hidden-size', type=int, default=2 ** 9, help='hidden size of lstm model')
+    parser.add_argument('--fc-size', type=int, default=2 ** 9, help='fc size of fc model')
     args = parser.parse_args()
 
-    train(gpu=args.gpu)
+    train(**vars(args))
