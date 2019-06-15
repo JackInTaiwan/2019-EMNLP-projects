@@ -96,7 +96,6 @@ def train(gpu):
     if gpu:
         print('|Use GPU')
         loss_func = loss_func.cuda()
-        optim = optim.cuda()
         model = model.cuda()
 
     for epoch_ in range(epoch):
